@@ -1,3 +1,3 @@
 import { animate } from 'animejs';
 
-animate('.square', { x: '17rem' });
+animate('.square', { y: '17rem' });

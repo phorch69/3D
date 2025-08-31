@@ -1,6 +1,11 @@
 /* -- Global -- */
 
-*{
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body,html{
   margin: 0%;
   padding: 0%;
   box-sizing: border-box;
@@ -38,7 +43,7 @@ li {
 header {
   display: flex;
   flex-direction: row;
-  padding-top: 1.5%;
+  /* padding-top: 1.5%; */
   padding-inline: 5% 5%;
   align-items: center;
   justify-content: space-between;
@@ -64,8 +69,79 @@ header Nav a {
   padding-inline: 13px 13px;
 }
 
-label {
-  color: aliceblue;
+#Background:hover {
+  cursor: pointer;
+  filter: drop-shadow(6px 6px 1.5px var(--C-Color-Claro));
+}
+
+.Day {
+  display: block;
+}
+
+.Moon {
+  display: none;
+}
+
+
+#checkbox {
+  display: none;
+}
+
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition-duration: .5s;
+}
+
+.bars {
+  width: 60%;
+  height: 5px;
+  background-color: rgb(0, 0, 0);
+  border-radius: 4px;
+}
+
+#bar2 {
+  transition-duration: .8s;
+  background-color: black;
+}
+
+#bar1,#bar3 {
+  width: 30%;
+  background-color: black;
+}
+
+#checkbox:checked + .toggle .bars {
+  position: absolute;
+  transition-duration: .5s;
+}
+
+#checkbox:checked + .toggle #bar2 {
+  transform: scaleX(0);
+  transition-duration: .5s;
+}
+
+#checkbox:checked + .toggle #bar1 {
+  width: 50%;
+  transform: rotate(45deg);
+  transition-duration: .5s;
+}
+
+#checkbox:checked + .toggle #bar3 {
+  width: 50%;
+  transform: rotate(-45deg);
+  transition-duration: .5s;
+}
+
+#checkbox:checked + .toggle {
+  transition-duration: .5s;
+  transform: rotate(180deg);
 }
 
 /*
@@ -257,14 +333,6 @@ footer p {
 }
 
 .Img-X {
-  display: none;
-}
-
-.Day {
-  display: block;
-}
-
-.Moon {
   display: none;
 }
 

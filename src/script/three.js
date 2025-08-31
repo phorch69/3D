@@ -17,16 +17,25 @@ import { Sky } from 'three/addons/objects/Sky.js';
 //import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 
 // <-- Declarar Parte del HTML -->
+/*
+const Nav = document.querySelector('.Nav');
+const Section = document.querySelector(".Detalles");
+const checkbox = document.getElementById('checkbox');
+
+checkbox.addEventListener('click', function() {
+    Nav.style.display = Nav.style.display === "none" ? "flex" : "none";
+    Section.style.display = Section.style.display === "flex" ? "none" : "flex";
+});
 
 const Background = document.getElementById("Background");
 const Day = document.querySelector(".Day");
 const Moon = document.querySelector(".Moon");
-
+*/
 //Sol
 let EstadoSol = 1.5;
 let ElevaSol = 4;
 let GiroSol = 180;
-
+/*
 Background.addEventListener('click', function() {
 	//Cambia el Estilo de CSS
     Day.style.display = Day.style.display === "none" ? "block" : "none";
@@ -42,7 +51,7 @@ Background.addEventListener('click', function() {
 	return SunGlobal(ElevaSol)
 	return SunGlobal(GiroSol)
 });
-
+*/
 
 
 // <-- Declararciones de THREE.js -->
@@ -50,17 +59,12 @@ let camera, container, scene, renderer, stats;
 let DracoLoader, Loader, Models;
 let zoom, Manager, ProgresBar, Load, Start;
 let light, Sun, SkySun;
-let water;
 let INTERSECTED, raycaster;
-//let controls, Clock, HDRLoader, textGeo, renderTarget;
-
-//var url = 'https://drive.google.com/uc?export=download&id=1Uqlm3rr6nmCmfeeRa8LrDf_QUeodEWlL';
-var url = '/Modelos/gltf/Isla-Three.gltf'
-//var Texture_1 = 'https://drive.google.com/uc?export=download&id=1xFESLmYUX1E0-xJEb1sR-jIDW9WntK6M';
-//var Texture_1 = "https://drive.google.com/drive/u/1/folders/1HXhHnKncp47wy4yTFv7T0W3wJR7h2u-F";
-var Texture_1 = '/Modelos/Texture/Mar.jpg'
-//setCrossOrigin('anonymous');
-//script.crossOrigin = 'anonymous';
+ let gamepadIndex = null;
+const moveSpeed = 0.08;
+const rotateSpeed = 0.03;
+const forward = new THREE.Vector3();
+const right = new THREE.Vector3();
 
 const pointer = new THREE.Vector2();
 
@@ -80,14 +84,9 @@ function init() {
 
 	// <-- -->
 	Ilumination();
-	Loader3d();
+	//Loader3d();
 	SunGlobal();
-	Oceano();
-	//Text()
-
-	// <-- NO se Usaran en este Proyecto -->
-	//Controls();
-	//Background();
+	Controls();
 
 	window.addEventListener('resize', onWindowResize, false);
 	//window.addEventListener('resize', onWindowResize);
@@ -164,14 +163,9 @@ function onWindowResize() {
 }
 
 function Animacion () {
-	//Oceano
-	water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
-	//Control
-	/*Clock = new THREE.Clock();
-	controls.update( Clock.getDelta() );*/
-	//Pointer
-	//document.body.appendChild( stats.dom );
-	document.addEventListener( 'mousemove', onPointerMove );
+	requestAnimationFrame(animate);
+      if (gamepadIndex !== null) updateGamepad();
+      renderer.render(scene, camera);
 }
 
 function animate() {
@@ -207,50 +201,17 @@ function LoadingManager() {
     //};
 }
 
-// <-- -->
-
 //Movimiento de la camara con mouse
 function Zoom() {
 	zoom = new OrbitControls(camera, renderer.domElement);
-	/*zoom.autoRotate = true;
-	zoom.autoRotateSpeed = 0.2;*/
+	//zoom.autoRotate = true;
+	//zoom.autoRotateSpeed = 0.2;
 	zoom.autoRotate = false;
 	zoom.zoomSpeed = 3;
 	zoom.minDistance = 7;
 	zoom.maxDistance = 55;
 	zoom.maxPolarAngle = 1.4;
 	zoom.maxTargetRadius = 0;
-}
-
-function Oceano() {
-	const waterGeometry = new THREE.PlaneGeometry( 10000, 10000 );
-
-	water = new Water(
-		waterGeometry,
-		{
-		textureWidth: 512,
-		textureHeight: 512,
-		waterNormals: new THREE.TextureLoader().load( Texture_1, function ( texture ) {
-
-			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-
-		} ),
-		sunDirection: new THREE.Vector3(),
-		sunColor: 0xffffff,
-		waterColor: 0x001e0f,
-		distortionScale: 3.7,
-		fog: scene.fog !== undefined
-		}
-	);
-
-	water.rotation.x = - Math.PI / 2;
-
-	scene.add( water );
-}
-
-// sin entender todavia
-function Text() {
-	//
 }
 
 function SunGlobal() {
@@ -343,40 +304,39 @@ function Ilumination() {
 	scene.add( Ambient, light );
 }
 
-//Pointer
-function onPointerMove( event ) {
-
-	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-}
-
-// <-- Funciones extras que no se usaran en este proyecto. Pero quedan de Muesta -->
-
-/*
-	<-- Funcion HDR -->
-function Background() {
-	//HDRLoader = new RGBELoader();
-    //HDRLoader.setDataType( THREE.FloatType );
-	//HDRLoader.setDataType( THREE[ HalfFloatType ] );
-	HDRLoader = new RGBELoader(Manager).load( '', ( environmentMap ) => {
-		
-        environmentMap.mapping = THREE.EquirectangularReflectionMapping;
-		//environmentMap.needsUpdate = true;
-
-		scene.background = environmentMap;
-		scene.environment = environmentMap;
-    } );
-}
-
-	<-- Movimiento de la camara con teclado -->
 function Controls () {
-	controls = new FlyControls(camera, renderer.domElement)
-	controls.movementSpeed = 20;
-	controls.domElement = container;
-	controls.rollSpeed = Math.PI / 24;
-	controls.autoForward = false;
-	controls.dragToLook = false;
-	controls.handleResize();
+	window.addEventListener("gamepadconnected", (e) => {
+      gamepadIndex = e.gamepad.index;
+      document.getElementById("info").innerText = `Gamepad conectado: ${e.gamepad.id}`;
+    });
+
+    window.addEventListener("gamepaddisconnected", () => {
+      gamepadIndex = null;
+      document.getElementById("info").innerText = "Gamepad desconectado";
+    });
 }
-*/
+
+function updateGamepad() {
+      const gp = navigator.getGamepads()[gamepadIndex];
+      if (!gp) return;
+
+      // Sticks
+      const lx = gp.axes[0], ly = gp.axes[1]; // movimiento
+      const rx = gp.axes[2], ry = gp.axes[3]; // rotación
+
+      // Dirección de cámara
+      camera.getWorldDirection(forward);
+      forward.y = 0; forward.normalize();
+
+      right.crossVectors(forward, camera.up).normalize();
+
+      // Movimiento
+      if (Math.abs(lx) > 0.1) camera.position.addScaledVector(right, lx * moveSpeed);
+      if (Math.abs(ly) > 0.1) camera.position.addScaledVector(forward, -ly * moveSpeed);
+
+      // Rotación
+      if (Math.abs(rx) > 0.1) camera.rotation.y -= rx * rotateSpeed;
+      if (Math.abs(ry) > 0.1) {
+        camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - ry * rotateSpeed, -Math.PI/2, Math.PI/2);
+      }
+    }

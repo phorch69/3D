@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js + Gamepad (Joystick)</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; }
+    canvas { display: block; }
+    #info {
+      position: absolute;
+      top: 10px; left: 10px;
+      color: white; background: rgba(0,0,0,0.5);
+      padding: 8px; border-radius: 5px;
+      font-family: monospace; font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Conecta un joystick y toca un botón para activarlo.</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script>
+    // --- Escena ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1.5, 5);
+
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // --- Luz ---
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5,5,5);
+    scene.add(light);
+
+    // --- Objeto simple ---
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshStandardMaterial({color: 0x00ffcc});
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    // --- Suelo ---
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(20,20),
+      new THREE.MeshStandardMaterial({color: 0x222222, side: THREE.DoubleSide})
+    );
+    plane.rotation.x = -Math.PI/2;
+    scene.add(plane);
+
+    // --- Variables de control ---
+    let gamepadIndex = null;
+    const moveSpeed = 0.05;
+    const rotateSpeed = 0.02;
+
+    // --- Detectar gamepad conectado ---
+    window.addEventListener("gamepadconnected", (e) => {
+      gamepadIndex = e.gamepad.index;
+      document.getElementById("info").innerText = 
+        `Gamepad conectado: ${e.gamepad.id}`;
+    });
+
+    window.addEventListener("gamepaddisconnected", () => {
+      gamepadIndex = null;
+      document.getElementById("info").innerText = "Gamepad desconectado";
+    });
+
+    // --- Loop principal ---
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (gamepadIndex !== null) {
+        const gp = navigator.getGamepads()[gamepadIndex];
+
+        if (gp) {
+          // Stick izquierdo -> movimiento
+          const lx = gp.axes[0]; // izquierda/derecha
+          const ly = gp.axes[1]; // arriba/abajo
+
+          const forward = new THREE.Vector3();
+          camera.getWorldDirection(forward);
+          forward.y = 0; // sin subir/bajar
+          forward.normalize();
+
+          const right = new THREE.Vector3();
+          right.crossVectors(forward, camera.up).normalize();
+
+          camera.position.addScaledVector(forward, -ly * moveSpeed);
+          camera.position.addScaledVector(right, lx * moveSpeed);
+
+          // Stick derecho -> rotación de cámara
+          const rx = gp.axes[2]; // rotación horizontal
+          const ry = gp.axes[3]; // rotación vertical
+
+          camera.rotation.y -= rx * rotateSpeed;
+          camera.rotation.x -= ry * rotateSpeed;
+          camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Ajustar ventana
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

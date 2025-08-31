@@ -3,7 +3,7 @@
 Aca estare realizando un proyecto con modelos 3D utilizando las librerias Three.js y Anime.js
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-0.0.1-green.svg)
 ![Build](https://img.shields.io/badge/Proyecto-En_Proceso-brightgreen)
 
 ---
